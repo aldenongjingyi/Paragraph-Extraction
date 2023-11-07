@@ -21,11 +21,10 @@ output_folder = 'Output'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
-# Process each image file in the list
+# Process each image in the list
 for image_path in raw_files:
     # Load the image
     page = cv2.imread(image_path)
-
     height, width, channels = page.shape
 
     # Convert image to grayscale
@@ -46,7 +45,7 @@ for image_path in raw_files:
     contour_coordinates = []
     contour_list_binary = []
     contours, _ = cv2.findContours(dilated_page, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    print("Number of contours found in page: " + str(len(contours)))
+    print("Paragraphs extracted from " + str(image_path) + ": " + str(len(contours)))
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
         # Extract ROI for normal
@@ -63,7 +62,7 @@ for image_path in raw_files:
     for c in range(len(contour_list_binary)):
         table_threshold = 40  # Determines number of consecutive pixels to assume contour is not text
         consecutive_white_pixels = 0
-        is_text = True  # Flag to track if contour contains a table
+        is_text = True  # Flag to track if contour is a paragraph (not table or image)
 
         for row in range(contour_list_binary[c].shape[0]):
             for col in range(contour_list_binary[c].shape[1]):
@@ -85,7 +84,7 @@ for image_path in raw_files:
     # Sort paragraphs in correct order
     sorted_paragraphs = sorted(paragraph_and_coordinates, key=lambda item: (item[1][0], item[1][1]))
 
-    # Create a sub-folder based on the image's filename
+    # Create a sub-folder based on the image number
     image_filename = os.path.basename(image_path)
     image_folder = os.path.splitext(image_filename)[0]
     image_folder_path = os.path.join(output_folder, image_folder)
@@ -108,4 +107,4 @@ for image_path in raw_files:
     #     cv2.destroyAllWindows()  # Close the window after a key is pressed
     # # _____________________________________________________________________
 
-print("Paragraphs have been extracted and saved to respective folders")
+print("All paragraphs have been extracted and saved to respective folders")
